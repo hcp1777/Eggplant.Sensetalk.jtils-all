@@ -20,7 +20,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+
 DISCLAIMER
 This toolkit uses SenseTalk, a proprietary scripting language developed by 
-Keysight Eggplant. The toolkit is not affiliated with or endorsed by Keysight. 
-SenseTalk is not open source and is subject to its own licensing terms.
+Keysight Technologies, Inc. The toolkit is not affiliated with or endorsed 
+by Keysight. SenseTalk is not open source and is subject to its own licensing 
+terms.
