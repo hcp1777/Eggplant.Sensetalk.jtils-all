@@ -22,4 +22,7 @@ SOFTWARE.
 
 
 DISCLAIMER
-This toolkit uses SenseTalk, a proprietary scripting language developed by Keysight Eggplant. The toolkit is not affiliated with or endorsed by Keysight. SenseTalk is not open source and is subject to its own licensing terms.
+This toolkit uses SenseTalk, a proprietary scripting language developed by 
+Keysight Technologies, Inc. The toolkit is not affiliated with or endorsed 
+by Keysight. SenseTalk is not open source and is subject to its own licensing 
+terms.
