@@ -41,19 +41,20 @@
 #    4. Text Properties Processing (up to 7 via textProperty1 to textProperty7):
 #
 #        - Supports the following properties/modifiers if it is or contains:
-#            - a number: Sets pList.dpi
+#            - a number: Sets pList.dpi to number
 #            - "words": Sets pList.validWords to "*"
 #            - "char": Sets pList.validCharacters to "*"
-#            - "invert": pList.invertImage = true
-#            - "contrast": pList.enhanceLocalContrast = true
-#            - "case": pList.caseSensitive = true
-#            - "space": pList.ignoreSpace = true
-#            - "under": pList.ignoreUnderscores = true
+#            - "invert": Sets pList.invertImage = true
+#            - "contrast": Sets (pList.contrast,pList.contrastColor,pList.contrastTolerance) to ("on","autoDetect","45")
+#            - "local" or "enhance": Sets pList.enhanceLocalContrast to true
+#            - "case": Sets pList.caseSensitive to true
+#            - "space": Sets pList.ignoreSpace to true
+#            - "under": Sets pList.ignoreUnderscores to true
 #            - "scale": Sets pList.scale to a range (0.5 to 1.5 in 0.05 steps; hardcoded)
-#            - "aggressive": pList.enableAggressiveTextExtraction = true
-#            - "new","newline",newline: pList.ignoreNewLines = true
-#            - "multiline","multi": pList.multiLine = true
-#            - "diff": pList.TextDifference = the number that is within the parameter (default: 1)
+#            - "aggressive": Sets pList.enableAggressiveTextExtraction to true
+#            - "new","newline",newline: Sets pList.ignoreNewLines to true
+#            - "multiline","multi": Sets pList.multiLine to true
+#            - "diff": Sets pList.TextDifference to the number that is within the parameter (default: 1)
 #
 #    5. Output: Returns the constructed pList for use in-line of the code where the script was called
 #
@@ -96,7 +97,8 @@ repeat for each item of textProperties
 		...contains "words": set pList.validWords to "*"
 		...contains "char": set pList.validCharacters to "*"
 		...contains "invert": set pList.invertImage to true
-		...contains "contrast": set pList.enhanceLocalContrast to true
+		...contains "contrast": set (pList.contrast,pList.contrastColor,pList.contrastTolerance) to (true,"autoDetect","45")
+		...contains "local" or it contains "enhance": set pList.enhanceLocalContrast to true
 		...contains "case": set pList.caseSensitive to true
 		...contains "space": set pList.ignoreSpace to true
 		...contains "under": set pList.ignoreUnderscores to true
@@ -107,6 +109,7 @@ repeat for each item of textProperties
 		...contains "diff": 
 			if it contains <digit> then delete <letters, whitespace> from it else set it to 1
 			set pList.TextDifference to it
+		...is a list and the number of items of it is 2: set pList.hotSpot to it
 	end if
 end repeat
 
