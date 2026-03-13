@@ -45,10 +45,10 @@
 #            - "words": Sets pList.validWords to "*"
 #            - "char": Sets pList.validCharacters to "*"
 #            - "invert": Sets pList.invertImage = true
-#            - "contrast": Sets (pList.contrast,pList.contrastColor,pList.contrastTolerance) to ("on","autoDetect","45")
+#            - "contrast": Sets (pList.contrast,pList.contrastColor,pList.contrastTolerance) to ("on","AutoDetect","45")
 #            - "local" or "enhance": Sets pList.enhanceLocalContrast to true
 #            - "case": Sets pList.caseSensitive to true
-#            - "space": Sets pList.ignoreSpace to true
+#            - "space": Sets pList.ignoreSpace to true (should be passed in as "ignoreSpace" if no quotes are desired)
 #            - "under": Sets pList.ignoreUnderscores to true
 #            - "scale": Sets pList.scale to a range (0.5 to 1.5 in 0.05 steps; hardcoded)
 #            - "aggressive": Sets pList.enableAggressiveTextExtraction to true
@@ -92,29 +92,35 @@ if waitForTime is not contained by [empty,"n/a","na"] then set pList.waitFor to 
 # add text property to the property list
 repeat for each item of textProperties
 	if it = "" then exit repeat
+	if it is space then set it to "space" else if it is underscore then set it to "underscore" //because they are ST keywords
 	if it...
 		...is a number: set pList.dpi to it
-		...contains "words": set pList.validWords to "*"
+		...contains "word": set pList.validWords to "*"
 		...contains "char": set pList.validCharacters to "*"
 		...contains "invert": set pList.invertImage to true
-		...contains "contrast": set (pList.contrast,pList.contrastColor,pList.contrastTolerance) to (true,"autoDetect","45")
 		...contains "local" or it contains "enhance": set pList.enhanceLocalContrast to true
+		...contains "contrast": set (pList.contrast,pList.contrastColor,pList.contrastTolerance) to (true,"AutoDetect","45")
 		...contains "case": set pList.caseSensitive to true
-		...contains "space": set pList.ignoreSpace to true
+		...contains "space": set pList.ignoreSpaces to true
 		...contains "under": set pList.ignoreUnderscores to true
 		...contains "scale": set pList.scale to 0.5..1.5 by 0.05
 		...contains "aggressive": set pList.enableAggressiveTextExtraction to true
 		...is contained by ["new","newline",newline]: set pList.ignoreNewLines to true
 		...is contained by ["multiline","multi"]: set pList.multiLine to true
-		...contains "diff": 
-			if it contains <digit> then delete <letters, whitespace> from it else set it to 1
-			set pList.TextDifference to it
+		...contains "diff":
+			if it contains <digit>
+				delete <letters> from it
+				delete <whitespace> from it
+			else
+				set it to 1
+			end if
+			set pList.textDifference to it
 		...is a list and the number of items of it is 2: set pList.hotSpot to it
 	end if
 end repeat
 
 logger
-put !" >> pL [[notSign]] [[pList]]"
+put !" >> pL [[notSign]][[newline]][[pList]]"
 
 return pList
 
