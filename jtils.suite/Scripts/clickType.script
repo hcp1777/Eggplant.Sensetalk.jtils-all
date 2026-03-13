@@ -1,71 +1,65 @@
 # Clicks a specified location in a specified direction and types string (or performs specified click) and optionally returns copied string
 #
-#  Note: Label to input field offset to the right might not work in every situation depending on screen, length of label, or form layout
-#
 #
 #  Parameter:
 #
 #		(1) inputFieldLabelOrXY:  input field label, XY coordinate
 #		(2) typeString:
 #				(a) string to be typed into the input field
-#				(b) can also be a click action: 'click', 'doubleclick', 'tripleclick', 'repeatclick')
+#				(b) can also be a click action: 'click', 'doubleclick', 'tripleclick')
 #		(3) down (optional): specify if input field is below the label (default: right)
 #		(4) index (optional): specify if there are multiple instances of the same word on the screen
 #		(5) dpi (optional): specify if OCR tuning is required
+#		(6) offSetPixels (optional): specify number of pixels to offset by
 #
 #
 #  Usage Syntax:
 #
-#		put clickType("Username",GuestQA)
-#		put clickType("Street Address 1","123 Main St.",down)
-#		set confirmationNumber to clickType("Confirmation Number",tripleclick,down)
+#		clicktype "Username","GuestQA"
+#		put clicktype("Street Address 1","123 Main St.",down)
+#		set confirmationNumber to clicktype("Confirmation Number",tripleclick,down)
 #
 #
 # SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
 # SUITE  NAME:  jtils
-# SCRIPT NAME:  clickType.script
+# SCRIPT NAME:  clicktype.script
 # AUTHOR NAME:  Jerry Park
 #
 
 
-params inputFieldLabelOrXY, typeString, down=empty, index=1, dpi=72
-put ">> util/clickType()"
+params inputFieldLabelOrXY, typeString, down=empty, index=1, dpi=72, offsetPixels=15
+put ">> clicktype.script"
 
-set startTime to abbreviated time
-clipboard
+# determine offset based on whether the input field is right of or below the label
 if inputFieldLabelOrXY is not a list
-    if down is contained by [empty,"right"]
-        if length(inputFieldLabelOrXY)...
-            ...< 3: set zOffset to [20,0]
-            ...< 7: set zOffset to [50,0]
-            ...is between 6 and 13: set zOffset to [85,0]
-            ...> 12: set zOffset to [135,0]
-        end if
-    else
-        set zOffset to [0,20]
-    end if
-    if index is contained by [empty,0,1]\
-            then set inputField to imageLocation(pL(inputFieldLabelOrXY,empty,3.99,dpi)) + zOffSet\
-            else set inputField to item index of everyImageLocation(pL(inputFieldLabelOrXY,empty,0,dpi)) + zOffSet
+	if down is contained by [empty,"right"] then set (position,zOffset) to (rightCenter,[offsetPixels,0]) else set (position,zOffset) to (bottomCenter,[0,offsetPixels])
+	set pList to {text:inputFieldLabelOrXY,dpi:dpi,waitFor:4.99}
+
+	# determine click location
+	if index is contained by [empty,0,1]\
+			then set inputField to (imageRectangle(pList)).(position)+zOffset\
+			else set inputField to (item index of everyImageRectangle(pList)).(position)+zOffset
 else
-    set inputField to inputFieldLabelOrXY
+	set inputField to inputFieldLabelOrXY
 end if
+put !"[[newline]]>>   pList: [[pList]][[newline]]>>   typeString: [[typeString]][[newline]]"
 
+# perform the specified type or click action
 if typeString is...
-    "click": click inputField
-    "doubleclick": doubleclick inputField
-    "tripleclick": tripleclick inputField
-    "repeatclick": repeatclick inputField
-    else:
-        click inputField
-        keys typeString
-        exit handler
+	"click": click inputField
+	"doubleclick": doubleclick inputField
+	"tripleclick": tripleclick inputField
+	else:
+		click inputField
+		typeText typeString
+		exit handler
 end if
-put !"     done in [[abbreviated time - startTime]]"
-key.copy
 
-return remoteClipboard()
-
+# if double or tripleclick is specified, returns the selected value
+if typeString is contained by ["doubleclick","tripleclick"]
+	key.copy
+	return remoteClipboard()
+end if
 
 
 
