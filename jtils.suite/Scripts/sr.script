@@ -1,4 +1,4 @@
-﻿# Used to define the searchRectangle (sr) based on remoteScreenSize() or can call one of the predefined areas of the screen listed below
+# Used to define the searchRectangle (sr) based on remoteScreenSize() or can call one of the predefined areas of the screen listed below
 #
 # Calling this handler without any parameters will clear any custom region or stale yellow rectangle lines and reset the searchRectangle
 # back to the fullscreen on the SUT
@@ -47,10 +47,11 @@ if x1 is...
 			"tr": return [refXY.x-10,refXY.y-x2,refXY.x+x2,refXY.y+10]
 			"bl": return [refXY.x-x2,refXY.y-10,refXY.x+10,refXY.y+x2]
 			"br": return [refXY.x-10,refXY.y-10,refXY.x+x2,refXY.y+x2]
-			"t": return [refXY.x-(x2/3),refXY.y-x2,refXY.x+(x2/3),refXY.y-10]
+			"t": return [refXY.x-(x2/3),refXY.y-x2,refXY.x+(x2/3),refXY.y+10]
 			"r": return [refXY.x-10,refXY.y-(x2/3),refXY.x+x2,refXY.y+(x2/3)]
 			"b": return [refXY.x-(x2/3),refXY.y-10,refXY.x+(x2/3),refXY.y+x2]
 			"l": return [refXY.x-x2,refXY.y-(x2/3),refXY.x+10,refXY.y+(x2/3)]
+			"c": return [refXY.x-(x2/2),refXY.y-(x2/2),refXY.x+(x2/2),refXY.y+(x2/2)]
 		end if
 		return [refXY.x-rad,refXY.y-rad,refXY.x+rad,refXY.y+rad]
 	empty: set the searchRectangle to []
@@ -118,6 +119,8 @@ if x1 is...
 		if y2 is within 0..1 then set y2 to y2*s.y
 		return [x1,y1,x2,y2]
 end if
+
+
 
 
 
