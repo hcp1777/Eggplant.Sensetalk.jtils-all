@@ -15,6 +15,49 @@
 # AUTHOR NAME:  Jerry Park
 #
 
+# Types one to many passed in values including wait times
+# First parameter can be used to set remoteWorkInterval() for subsequent key commands
+# 
+# 
+#  Usage Syntax:
+#
+#    keys varName
+#    keys "It's a beautiful day."
+#    keys 0.1,tabKey,tabKey,tabKey,wait10,lastName,tabKey,wait1,firstName,tabkey,returnKey
+#    keys 0.1,tabKey,tabKey,tabKey,"wait 0.99",lastName,tabKey,"wait 0.99",firstName,tabkey,returnKey
+#
+#
+# SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
+# SUITE  NAME:  jtils
+# SCRIPT NAME:  keys.script
+# AUTHOR NAME:  Jerry Park
+#
+
+
+set typeStrings to parameterList()
+set i to item 1 of typeStrings
+
+if i is a number
+	rwi i
+	pull typeStrings
+else
+	rwi 0.27
+end if
+
+repeat for each item of typeStrings
+	--log "keys.script:"&&it //debug
+	if it begins with "wait"
+		delete "wait" from it
+		wait trim(it)
+	else
+		typeText it
+	end if
+end repeat
+rwi
+
+
+
+
 
 set typeStrings to parameterList()
 set i to item 1 of typeStrings
