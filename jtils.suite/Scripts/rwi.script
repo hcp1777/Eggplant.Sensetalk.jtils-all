@@ -17,8 +17,10 @@
 
 params speed
 
-logger 0
+--logger 0
 if speed = "" then set the remoteWorkInterval to 0.7 else set the remoteWorkInterval to speed
-logger
+--logger
+
+
 
 
