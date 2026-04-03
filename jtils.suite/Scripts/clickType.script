@@ -3,7 +3,7 @@
 #
 #  Parameter:
 #
-#		(1) inputFieldLabelOrXY:  input field label, XY coordinate
+#		(1) inputFieldLabelOrXY:  input field label, XY coordinate (can explicitly specify text by leading with 'text' for when image exists with same name)
 #		(2) typeString:
 #				(a) string to be typed into the input field
 #				(b) can also be a click action: 'click', 'doubleclick', 'tripleclick')
@@ -31,16 +31,20 @@ params inputFieldLabelOrXY, typeString, down=empty, index=1, dpi=72, offsetPixel
 put ">> clicktype.script"
 
 # determine offset based on whether the input field is right of or below the label
+if down is contained by [empty,"right"] then set (position,zOffset) to (rightCenter,[offsetPixels+5,0]) else set (position,zOffset) to (bottomCenter,[0,offsetPixels])
+
+# formulate based on coordinate or text
 if inputFieldLabelOrXY is not a list
-	if down is contained by [empty,"right"] then set (position,zOffset) to (rightCenter,[offsetPixels,0]) else set (position,zOffset) to (bottomCenter,[0,offsetPixels])
 	set pList to {text:inputFieldLabelOrXY,dpi:dpi,waitFor:4.99}
 
-	# determine click location
+	# determine click location from text with offset
 	if index is contained by [empty,0,1]\
 			then set inputField to (imageRectangle(pList)).(position)+zOffset\
 			else set inputField to (item index of everyImageRectangle(pList)).(position)+zOffset
+	
 else
-	set inputField to inputFieldLabelOrXY
+	# coordinate with offset
+	set inputField to inputFieldLabelOrXY+zOffset
 end if
 put !"[[newline]]>>   pList: [[pList]][[newline]]>>   typeString: [[typeString]][[newline]]"
 
@@ -51,6 +55,7 @@ if typeString is...
 	"tripleclick": tripleclick inputField
 	else:
 		click inputField
+		wait 0.99
 		typeText typeString
 		exit handler
 end if
@@ -60,6 +65,8 @@ if typeString is contained by ["doubleclick","tripleclick"]
 	key.copy
 	return remoteClipboard()
 end if
+
+
 
 
 
