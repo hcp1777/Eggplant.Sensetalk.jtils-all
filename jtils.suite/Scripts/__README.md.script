@@ -1,8 +1,7 @@
 (*
-
 # jtils-all.suite
 
-jtils-all is Jerry's Utilities, an Eggplant Sensetalk Toolkit (Established Since 2020)
+jtils-all is Jerry's Full Utility and Custom Sensetalk Tooling Set, Eggplant Toolkit (Established Since 2020)
 
 Add jtils-all.suite as a helper suite to any project to be able to utilize all of the useful tooling of the Sensetalk scripting language to assist with streamlining Eggplant scripting tasks and workflows.
 
@@ -16,7 +15,7 @@ Add jtils-all.suite as a helper suite to any project to be able to utilize all o
 
 ### *key.script*
 - - - 
-With *key.script*, there is no more need for `typeText`.  Calling into the key script is a cleaner way of coding any key press or key sequence. 
+With *key.script*, there is no more need for `typeText`.  Calling into the key script is a cleaner way of coding any key press or key sequence.
 
 Instead of the following:
 ```declarative
@@ -79,9 +78,16 @@ if imageFound(text:"B13888", searchRectangle: searchRectangle(), waitFor: 10, va
 
 With the *pL.script*, the examples above can be written as follows:
 ```declarative
-set xy to imageLocation(pL("Last Name", tl, 10, invert, case))
+set xy to imageLocation(pL("Last Name", screenTL, invert, case, wait10))
+click pL("os/win/start", screenBL, wait10)
+if imageFound(pL("B13888", screenParent, wait10, validCharacters)) then click foundImageLocation()
+```
+you can also abbreviate further:
+
+```declarative
+set xy to imageLocation(pL("Last Name", tl, invert, case, 10))
 click pL("os/win/start", bl, 10)
-if imageFound(pL("B13888", parent, 10, validCharacters)) then click foundImageLocation()
+if imageFound(pL("B13888", parent, chars, 10)) then click foundImageLocation()
 ```
 
 Even for the simplest query, instead of this:
@@ -104,14 +110,14 @@ The *sr.script* can be used to...
 1. Call one of the predefined areas of the screen listed below
 2. Pass in a percentage between 0..1 (i.e., 0.7)
 3. Pass in imageLocation to anchor off of as any position of the rectangle
-4. Search within specified radius from mouse cursor location or directionally from mouse cursor location
+4. Search within specified radius from mouse cursor location or directionally from mouse cursor location or from a passed in coordinate/rectangle
 
 Calling this handler without any parameters will clear any custom region or stale yellow rectangle lines on the SUT and reset the searchRectangle
 back to fullscreen.
 
 The *sr.script* is designed to work in-line with existing Sensetalk syntax.
 
-The *sr.script* is called by many other parts of this toolkit and therefore should be deemed essential. 
+The *sr.script* is called by many other parts of this toolkit and therefore should be deemed essential.
 
 Here is the list of pre-defined screen regions:
 
@@ -173,15 +179,15 @@ Current implementation of Eggplant Sensetalk where the searchRectangle needs to 
 set the searchRectangle to [576,324,1344,756]
 click text:variable1
 set the searchRectangle  to []
-cilck btnOK
+click btnOK
 ```
 
 Utilizing *sr.script*, the same block of code would be scripted as follows:
 ```declarative
-sr set,cc
+sr set,screenCC
 click text:variable1
 sr
-cilck btnOK
+click btnOK
 ```
 
 ### *waitUntil.script*
@@ -214,15 +220,14 @@ waitUntil 120,"Finished processing",found,0,[100,100,1000,1000],72
 
 Many, many more uses for these scripts as well as the other scripts and handlers within this toolkit.  Please review the notes at the beginning of each script and/or handler for details, explanations, and usage syntax.
 
-Make sure that no other script has the same name as any of the scripts in this toolkit.  Code will not look as clean if you have to type out a path into these scripts.  That would defeat the purpose of lessening the amount of typing which is one of the main benefits and advantage with this toolkit and why it is designed in the way that it is.
+Make sure that no other script has the same name as any of the scripts in this toolkit.  Code will not look as clean if you have to type out a path into these scripts.  That would defeat the purpose of lessening the amount of typing which is one of the main benefits and advantage with this Sensetalk custom tooling and why it is designed in the way that it is.
 
 Alleviating the frustration of having to type the same things out over and over again is a huge advantage over the standard "out of the box" Sensetalk syntax.
 
 
 >
 > Eggplant Sensetalk Toolkit (Established Since 2020)
-> 
+>
 > Author Name:  Jerry Park
 >
-
 *)
