@@ -20,10 +20,9 @@
 #
 #  Return value:
 #
-#		If returnHighlightedText is not empty: returns highlighted text
-#		Otherwise: no explicit return.
+#		if value is passed in for returnHighlightedText, returns the highlighted text else script exits without returning a value
 #
-# 
+#
 # SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
 # SUITE  NAME:  jtils
 # SCRIPT NAME:  tripleclick.script
@@ -36,15 +35,7 @@ put !">> tripleclick [[notSign]] [[imageTextXY]]"
 
 rwi 0.01
 logger 0
-if imageTextXY is not a list
-	try
-		if imageInfo(imageTextXY) > "" then set pList to imageTextXY
-	catch e
-		set pList to {text:imageTextXY}
-	end try
-else
-	set pList to imageTextXY
-end if
+if imageTextXY is not a list then set pList to common.imageOrText(imageTextXY) else set pList to imageTextXY
 logger
 
 click pList
@@ -56,8 +47,6 @@ if returnHighlightedText > ""
 	key.copy
 	return remoteClipboard()
 end if
-
-
 
 
 
