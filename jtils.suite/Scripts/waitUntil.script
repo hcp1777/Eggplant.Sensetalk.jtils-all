@@ -1,4 +1,4 @@
-﻿# Waits for image or text for a specified duration or until the image or text disappears from the screen including an option to wait afterwards
+# Waits for image or text for a specified duration or until the image or text disappears from the screen including an option to wait afterwards
 #
 # Eggplant's built-in "wait until" can theoretically continue to execute forever if what it is looking for isn't found
 # Another problem with the built-in wait until function is that execution can continue with the next line of code too soon which can cause execution failure
@@ -8,16 +8,20 @@
 #
 #  Parameter:
 #
-#		(1) imageOrText: image filepath/filename or text string
-#		(2) notFound: found or not found
-#		(3) duration: number of seconds
+#		(1) duration: number of seconds
+#		(2) imageOrText: image name or text (can explicitly specify text by leading with 'text' for when image exists with same name)
+#		(3) notFound: found or not found
 #		(4) waitAfter: number of seconds after found or not found (in case of unstable environments)
+#		(5) searchRec: search rectangle that is supported by the sr.script
+#		(6) dpiValue: dpi value for OCR
 #
 #
 #  Usage Syntax:
 #
 #		waitUntil 10,"browser/refresh",found
 #		waitUntil 30,"Save Print Output As",notFound,10
+#		waitUntil 30,"Save Print Output As",notFound,10,screenBR
+#		waitUntil 30,"Save Print Output As",notFound,10,sr(radius,tll,100),dpi85
 #
 #
 # SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
@@ -27,24 +31,26 @@
 #
 
 
-params duration=9.99, imageOrText, notFound="found", waitAfter=0, searchRec="", dpiValue=85
+params duration=9.99, imageOrText, notFound="found", waitAfter=0, searchRec="", dpiValue=""
 
 put !<<    ./waitUntil.script[[newline]]      [[notSign]] Waiting [[duration]] seconds for "[[imageOrText]]"...>>
-
 set visible to empty
 set timeExpired to false
 logger 0
 
 # determining whether to look for image or text
-try
-	if imageInfo(imageOrText) > "" then set pList to {image:imageOrText}
-catch e
-	set pList to {text:imageOrText,dpi:dpiValue}
-end try
+set pList to common.imageOrText(imageOrText)
 
-# add searchRectangle and waitFor properties to the property list
+# add searchRectangle, waitFor, and DPI properties to the property list
 if searchRec begins with "sr(" then set pList.searchRectangle to sr(item 1 of split(item 2 of split(searchRec,"sr("),")")) else if searchRec > "" then set pList.searchRectangle to sr(searchRec)
 set pList.waitFor to 0.99
+if dpiValue > "" and pList.text > ""
+	if dpiValue begins with "dpi"
+		delete <letters> from it
+		delete <whitespace> from it
+	end if
+	set pList.dpi to dpiValue
+end if
 put "         "&pList
 
 # looking for imageOrText to be found (or be removed from) the screen for the specified duration of time
@@ -74,7 +80,7 @@ if...
 		note logWarning,"waitUntil",!<<"[[imageOrText]]" is still visible after specified duration>>,"script"
 	notFound contains "not":
 		logger
-		put !<<       [[notSign]] "[[imageOrText]]" is no longer visible on the screen!>>
+		put !<<      [[notSign]] "[[imageOrText]]" is no longer visible on the screen!>>
 end if
 
 # handles wait time after found/notFound if specified
