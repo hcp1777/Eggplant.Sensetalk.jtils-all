@@ -81,7 +81,7 @@ set xy to imageLocation(pL("Last Name", screenTL, invert, case, wait10))
 click pL("os/win/start", screenBL, wait10)
 if imageFound(pL("B13888", screenParent, wait10, validCharacters)) then click foundImageLocation()
 ```
-you can also abbreviate further:
+You can also abbreviate further:
 
 ```declarative
 set xy to imageLocation(pL("Last Name", tl, invert, case, 10))
