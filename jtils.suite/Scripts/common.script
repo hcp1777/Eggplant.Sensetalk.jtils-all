@@ -1,0 +1,26 @@
+# Contains handlers that are modularized to be used across the jtils project.
+#
+#
+# SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
+# SUITE  NAME:  jtils
+# SCRIPT NAME:  common.script
+# AUTHOR NAME:  Jerry Park
+#
+
+
+to imageOrText source
+	# determines whether the passed in parameter is an image or text string and returns the properly constructed property list
+
+	if source begins with "text"
+		return {text:trimStart(item -1 of split(source,chars 1..4 of source))} //if string is explicitly specified as text for when image with same name not on screen might exist
+	else
+		try
+			if imageInfo(source) > "" then return {image:source} //checking for image
+		catch
+			return {text:source} //if no image with specified name, constructing the property list for text
+		end try
+	end if
+end to imageOrText
+
+
+
