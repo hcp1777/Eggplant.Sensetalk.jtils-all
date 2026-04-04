@@ -3,8 +3,8 @@
 # Calling this handler without any parameters will clear any custom region or stale yellow rectangle lines and reset the searchRectangle
 # back to the fullscreen on the SUT
 #
-# Ability to search within specified radius from mouse cursor location or directionally (from mouse cursor)
-# 
+# Ability to search within specified radius (or directionally) from mouse cursor location, or from coordinate/rectangle if specified
+#
 #
 #  Usage Syntax:
 #
@@ -15,7 +15,7 @@
 #	 	sr(radius,br,150)
 #		sr(380, imageLocation("titleBarIcon").y, 1, imageLocation(text:"Legal Notice").y)
 #
-# 
+#
 # SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
 # SUITE  NAME:  jtils
 # SCRIPT NAME:  sr.script
@@ -26,34 +26,45 @@
 set [x1,y1,x2,y2] to parameterList()
 set s to remoteScreenSize()
 
+# set the things (getting parameters to expected workable format)
 if x1 is a rectangle
 	set y2 to item 4 of x1
 	set x2 to item 3 of x1
 	set y1 to item 2 of x1
 	set x1 to item 1 of x1
+else if x1 begins with "screen"
+	delete "screen" from x1
+	set x1 to trimAll(x1)
+else if x1 begins with "rad"
+	if y1 begins with "screen"
+		delete "screen" from y1
+		set y1 to trimAll(y1)
+	end if
 end if
 
+# do the things
 if x1 is...
 	radius:
-		if y1 is a list //when radius does not default to mouseLocation()
-			if the number of items in y1 is 2 then set refXY to y1 else set refXY to y1.center
+		if y1 is a list //when coordinate or rectangle is passed in rather than letter(s) specifying direction (when not using mouseLocation())
+			if y1 is a rectangle then set refXY to y1.center else set refXY to y1
 			set rad to x2
 		else //when radius is using existing mouseLocation()
 			set refXY to mouseLocation()
-			if y1 is a number then set rad to y1
+			if y1 is a number then set rad to y1 //if 'c' for center is not explicitly specified but assumed with pixel value from cursor
 		end if
 		if y1 is...
-			"tl": return [refXY.x-x2,refXY.y-x2,refXY.x+10,refXY.y+10]
-			"tr": return [refXY.x-10,refXY.y-x2,refXY.x+x2,refXY.y+10]
-			"bl": return [refXY.x-x2,refXY.y-10,refXY.x+10,refXY.y+x2]
-			"br": return [refXY.x-10,refXY.y-10,refXY.x+x2,refXY.y+x2]
-			"t": return [refXY.x-(x2/3),refXY.y-x2,refXY.x+(x2/3),refXY.y+10]
-			"r": return [refXY.x-10,refXY.y-(x2/3),refXY.x+x2,refXY.y+(x2/3)]
-			"b": return [refXY.x-(x2/3),refXY.y-10,refXY.x+(x2/3),refXY.y+x2]
-			"l": return [refXY.x-x2,refXY.y-(x2/3),refXY.x+10,refXY.y+(x2/3)]
-			"c": return [refXY.x-(x2/2),refXY.y-(x2/2),refXY.x+(x2/2),refXY.y+(x2/2)]
+			"tl": return [refXY.x-x2,refXY.y-x2,refXY.x+1,refXY.y+1]
+			"tr": return [refXY.x-1,refXY.y-x2,refXY.x+x2,refXY.y+1]
+			"bl": return [refXY.x-x2,refXY.y-1,refXY.x+1,refXY.y+x2]
+			"br": return [refXY.x-1,refXY.y-1,refXY.x+x2,refXY.y+x2]
+			"t": return [refXY.x-(x2/3),refXY.y-x2,refXY.x+(x2/3),refXY.y+1]
+			"r": return [refXY.x-1,refXY.y-(x2/3),refXY.x+x2,refXY.y+(x2/3)]
+			"b": return [refXY.x-(x2/3),refXY.y-1,refXY.x+(x2/3),refXY.y+x2]
+			"l": return [refXY.x-x2,refXY.y-(x2/3),refXY.x+1,refXY.y+(x2/3)]
+			"c": return [refXY.x-x2,refXY.y-x2,refXY.x+x2,refXY.y+x2]
+			else:
+				return [refXY.x-rad,refXY.y-rad,refXY.x+rad,refXY.y+rad]
 		end if
-		return [refXY.x-rad,refXY.y-rad,refXY.x+rad,refXY.y+rad]
 	empty: set the searchRectangle to []
 	full: set the searchRectangle to []
 	parent: set the searchRectangle to searchRectangle()
@@ -106,12 +117,12 @@ if x1 is...
 	mm: return [0,0.25*s.y,s.x,0.75*s.y] //middle tighter
 	mmm: return [0,0.35*s.y,s.x,0.65*s.y] //middle tightest
 	tm: return [0.15*s.x,0,0.85*s.x,0.45*s.y] //top middle (top with sides omitted)
-	tm: return [0.2*s.x,0,0.8*s.x,0.4*s.y] //top middle tighter
-	tm: return [0.3*s.x,0,0.7*s.x,0.35*s.y] //top middle tightest
+	tmm: return [0.2*s.x,0,0.8*s.x,0.4*s.y] //top middle tighter
+	tmmm: return [0.3*s.x,0,0.7*s.x,0.35*s.y] //top middle tightest
 	bm: return [0.15*s.x,0.55*s.y,0.85*s.x,s.y] //bottom middle (bottom with sides omitted)
 	bmm: return [0.2*s.x,0.6*s.y,0.8*s.x,s.y] //bottom middle tighter
 	bmmm: return [0.3*s.x,0.65*s.y,0.7*s.x,s.y] //bottom middle tightest
-	
+
 	else: //allows for mix of coordinates and screen percentage as passed in values
 		if x1 is within 0..1 then set x1 to x1*s.x
 		if y1 is within 0..1 then set y1 to y1*s.y
