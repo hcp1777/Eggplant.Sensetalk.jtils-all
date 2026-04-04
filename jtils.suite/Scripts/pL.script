@@ -3,60 +3,62 @@
 # search constraints, wait times, and text ocr modifiers to the property list as specified.
 #
 #
-#  Parameters:
+#  ParameterList:
 #
-#       (1) source (required):  image name or text
-#       (2) searchRec (optional, required if textProperty1 is used):  compatible with sr.script or rectangle list
-#       (3) waitForTime (optional, required if textProperty1 is used):  timeout value
-#       (4..11) textProperty1..textProperty7 (optional):  text (ocr tuning) properties, see available properties below
+#		source (required as first parameter):  image name or text
+#		search rectangle:  can begin with "screen" before predefined regions via letter(s) in sr.script, full compatibility with sr.script or rectangle
+#		waitFor:  can begin with "wait" for readability or just a number, timeout value
+#		image and text properties:  image (scale) or text (ocr tuning) properties, see available properties below
 #
 #
 #  Usage Syntax:
 #
-#       set xy to imageLocation(pL("Last Name", tl, 4.99, invert, case))
-#       click pL("os/win/start", bl, 9.99)
-#       if imageFound(pL("B13888", parent, 10, validCharacters)) then click foundImageLocation()
+#		set xy to imageLocation(pL("Last Name", screenTL, wait5, invert, case))
+#		click pL("os/win/start", screenBBB, wait10)
+#		if imageFound(pL("B13888", screenParent, wait10, chars, aggressive, localContrast, dpi300)) then click foundImageLocation()
+#		moveTo imageLocation(pL("Close",sr(radius,br,100),wait10)
+#		set statusMsg to readText(imageLocation(pL("dialog/icon/warning",screenC,scale,wait10))&&&imageLocation(pL("Exit",screenBR,case,chars)))
 #
 #
 #  Key Functionality:
 #
-#    1. Source Detection:
+#	1. Source Detection:
 #
-#        - Checks if source is a valid image using imageInfo(source)
-#        - Sets pList.image if image, otherwise pList.text
+#		- Checks if source is a valid image using imageInfo(source)
+#		- Sets pList.image if image, otherwise pList.text
 #
-#    2. Search Rectangle Handling (searchRec):
+#	2. Search Rectangle Handling:
 #
-#        - If numeric: Sets pList.waitFor to the value
-#        - If "empty": Sets searchRectangle to the full screen of the SUT
-#        - If "parent": Uses searchRectangle() (current search area)
-#        - If starts with "sr(": Parses and evaluates as a call into the sr.script (e.g., "sr(radius,bl,350)")
-#        - If rectangle (4 item list) or letter(s) (must be supported by the sr.script): Converts to sr(searchRec)
-#        - Otherwise: Ignored
+#		- If "empty": Sets searchRectangle to the full screen of the SUT
+#		- If "parent": Uses searchRectangle() (current search area)
+#		- If starts with "sr(": Parses and evaluates as a call into the sr.script (e.g., "sr(radius,bl,350)")
+#		- If rectangle (4 item list) or letter(s) (must be supported by the sr.script): Converts to sr(param)
+#		- Otherwise: Ignored and not included in the property list
 #
-#    3. Wait Time (waitForTime):
+#	3. Wait Time:
 #
-#        - Adds pList.waitFor if provided and not contained by empty, "n/a", or "na"
+#		- Adds pList.waitFor if specified
 #
-#    4. Text Properties Processing (up to 7 via textProperty1 to textProperty7):
+#	4. Text Properties Processing (should begin with or include the string pL.script is looking for (e.g., dpi72, textDiff2, case, chars)):
 #
-#        - Supports the following properties/modifiers if it is or contains:
-#            - a number: Sets pList.dpi to number
-#            - "words": Sets pList.validWords to "*"
-#            - "char": Sets pList.validCharacters to "*"
-#            - "invert": Sets pList.invertImage = true
-#            - "contrast": Sets (pList.contrast,pList.contrastColor,pList.contrastTolerance) to ("on","AutoDetect","45")
-#            - "local" or "enhance": Sets pList.enhanceLocalContrast to true
-#            - "case": Sets pList.caseSensitive to true
-#            - "space": Sets pList.ignoreSpace to true (should be passed in as "ignoreSpace" if no quotes are desired)
-#            - "under": Sets pList.ignoreUnderscores to true
-#            - "scale": Sets pList.scale to a range (0.5 to 1.5 in 0.05 steps; hardcoded)
-#            - "aggressive": Sets pList.enableAggressiveTextExtraction to true
-#            - "new","newline",newline: Sets pList.ignoreNewLines to true
-#            - "multiline","multi": Sets pList.multiLine to true
-#            - "diff": Sets pList.TextDifference to the number that is within the parameter (default: 1)
+#		- Supports the following properties/modifiers if it is or contains:
+#			- "dpi": Sets pList.dpi to number
+#			- "words": Sets pList.validWords to "*"
+#			- "char": Sets pList.validCharacters to "*"
+#			- "invert": Sets pList.invertImage = true
+#			- "contrast": Sets (pList.contrast,pList.contrastColor,pList.contrastTolerance) to ("on","AutoDetect","45")
+#			- "local" or "enhance": Sets pList.enhanceLocalContrast to true
+#			- "case": Sets pList.caseSensitive to true
+#			- "space": Sets pList.ignoreSpace to true (should be passed in as "ignoreSpace" if no quotes are desired)
+#			- "under": Sets pList.ignoreUnderscores to true
+#			- "scale": Sets pList.scale to a range (0.5 to 1.5 in 0.05 steps; hardcoded)
+#			- "aggressive": Sets pList.enableAggressiveTextExtraction to true
+#			- "new","newline",newline: Sets pList.ignoreNewLines to true
+#			- "multiline","multi": Sets pList.multiLine to true
+#			- coordinate: Sets pList.hotSpot to coordinate
+#			- "diff": Sets pList.TextDifference to the number that is within the parameter (default: 1)
 #
-#    5. Output: Returns the constructed pList for use in-line of the code where the script was called
+#	5. Output: Returns the constructed pList for use in-line of the code where the script was called
 #
 #
 # SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
@@ -66,35 +68,18 @@
 #
 
 
-params source, searchRec="", waitForTime="", textProperty1="", textProperty2="", textProperty3="", textProperty4="", textProperty5="", textProperty6="", textProperty7=""
-
+set sourceAndProperties to parameterList()
 logger 0
-set textProperties to [textProperty1, textProperty2, textProperty3, textProperty4, textProperty5, textProperty6, textProperty7]
-set (stringOfValidChars,addedValidChars) to false
 
 # determining whether to look for image or text from 'source'
-try
-	if imageInfo(source) > "" then set pList to {image:source}
-catch e
-	set pList to {text:source}
-end try
-
-# add search rectangle if applicable
-if searchRec is a number then set pList.waitFor to searchRec\
-		else if searchRec is contained by [empty,"empty"] then set pList.searchRectangle to [0,0]&&&remoteScreenSize()\
-			else if searchRec is contained by ["n/a","na","parent"] then set pList.searchRectangle to searchRectangle()\
-				else if searchRec is a rectangle or searchRec matches <letter or letters> then set pList.searchRectangle to sr(searchRec)
-
-
-# add waitFor to the property list
-if waitForTime is not contained by [empty,"n/a","na"] then set pList.waitFor to waitForTime
+set pList to common.imageOrText(item 1 of sourceAndProperties)
+pull sourceAndProperties
 
 # add text property to the property list
-repeat for each item of textProperties
+repeat for each item of sourceAndProperties
 	if it = "" then exit repeat
-	if it is space then set it to "space" else if it is underscore then set it to "underscore" //because they are ST keywords
+	if it is space then set it to "space" else if it is underscore then set it to "underscore" //because Eggplant is having issues with these words if not in quotes
 	if it...
-		...is a number: set pList.dpi to it
 		...contains "word": set pList.validWords to "*"
 		...contains "char": set pList.validCharacters to "*"
 		...contains "invert": set pList.invertImage to true
@@ -105,8 +90,17 @@ repeat for each item of textProperties
 		...contains "under": set pList.ignoreUnderscores to true
 		...contains "scale": set pList.scale to 0.5..1.5 by 0.05
 		...contains "aggressive": set pList.enableAggressiveTextExtraction to true
-		...is contained by ["new","newline",newline]: set pList.ignoreNewLines to true
-		...is contained by ["multiline","multi"]: set pList.multiLine to true
+		...is contained by ["new","newline","newlines",newline]: set pList.ignoreNewLines to true
+		...is contained by ["multiline","multilines","multi"]: set pList.multiLine to true
+		...is a list and the number of items of it is 2: set pList.hotSpot to it
+		...begins with "hotSpot":
+			delete <letters> from it
+			delete <whitespace> from it
+			set pList.hotSpot to it
+		...begins with "dpi":
+			delete <letters> from it
+			delete <whitespace> from it
+			set pList.dpi to it
 		...contains "diff":
 			if it contains <digit>
 				delete <letters> from it
@@ -115,13 +109,27 @@ repeat for each item of textProperties
 				set it to 1
 			end if
 			set pList.textDifference to it
-		...is a list and the number of items of it is 2: set pList.hotSpot to it
+		...begins with "sr(": set pList.searchRectangle to sr(item 1 of split(item 2 of split(searchRec,"sr("),")"))
+		...is a rectangle: set pList.searchRectangle to sr(it)
+		...begins with "screen":
+			delete "screen" from it
+			set it to trimAll(it)
+			if it is contained by [empty,"empty"] then set pList.searchRectangle to [0,0]&&&remoteScreenSize()\
+					else if it is contained by ["n/a","na","parent"] then set pList.searchRectangle to the searchRectangle\
+						else set pList.searchRectangle to sr(it)
+		...is contained by ["t", "tt", "ttt", "l", "ll", "lll", "bb", "bbb", "r", "rr", "rrr", "c", "ccc", "ct", "cl",\
+					"cb", "cr", "tl", "tll", "tlll", "tr", "trr", "trrr", "br", "brr", "brrr", "bl", "bll", "blll", "m", "mm",\
+					"mmm", "tm", "tm", "tm", "bm", "bmm", "bmmm","parent","empty","full"]:
+			set pList.searchRectangle to sr(it)
+		...begins with "wait":
+			delete <letters> from it
+			delete <whitespace> from it
+			set pList.waitFor to it
+		...is a number: set pList.waitFor to it
 	end if
 end repeat
-
 logger
-put !" >> pL [[notSign]][[newline]][[pList]]"
-
+put !" >> pL [[notSign]] [[pList]]"
 return pList
 
 
