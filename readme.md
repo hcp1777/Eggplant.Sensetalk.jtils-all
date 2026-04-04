@@ -157,8 +157,8 @@ Here is the list of pre-defined screen regions:
 |mm|        middle tighter         |
 |mmm|        middle tightest        |
 |tm|  top middle (sides omitted)   |
-|tm|      top middle tighter       |
-|tm|      top middle tightest      |
+|tmm|      top middle tighter       |
+|tmmm|      top middle tightest      |
 |bm| bottom middle (sides omitted) |
 |bmm|     bottom middle tighter     |
 |bmmm|    bottom middle tightest     |
