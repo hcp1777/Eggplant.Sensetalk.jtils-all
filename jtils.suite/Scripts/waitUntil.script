@@ -11,17 +11,17 @@
 #		(1) duration: number of seconds
 #		(2) imageOrText: image name or text (can explicitly specify text by leading with 'text' for when image exists with same name)
 #		(3) notFound: found or not found
-#		(4) waitAfter: number of seconds after found or not found (in case of unstable environments)
-#		(5) searchRec: search rectangle that is supported by the sr.script
-#		(6) dpiValue: dpi value for OCR
+#		(4) waitAfter (should begin with "wait"): number of seconds after found or not found in case of unstable environments
+#		(5) searchRec: search rectangle (supported by the sr.script)
+#		(6) dpi (should begin with "dpi"): dpi value for OCR
 #
 #
 #  Usage Syntax:
 #
 #		waitUntil 10,"browser/refresh",found
-#		waitUntil 30,"Save Print Output As",notFound,10
-#		waitUntil 30,"Save Print Output As",notFound,10,screenBR
-#		waitUntil 30,"Save Print Output As",notFound,10,sr(radius,tll,100),dpi85
+#		waitUntil 30,"Save Print Output As",found,wait10
+#		waitUntil 30,"Save Print Output As",notFound,wait10,screenBR
+#		waitUntil 30,"Save Print Output As",notFound,wait10,sr(radius,tll,100),dpi85
 #
 #
 # SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
@@ -31,7 +31,7 @@
 #
 
 
-params duration=9.99, imageOrText, notFound="found", waitAfter=0, searchRec="", dpiValue=""
+params duration=9.99, imageOrText, notFound="found", waitAfter=wait0, searchRec="", dpi=dpi72
 
 put !<<    ./waitUntil.script[[newline]]      [[notSign]] Waiting [[duration]] seconds for "[[imageOrText]]"...>>
 set visible to empty
@@ -41,21 +41,23 @@ logger 0
 # determining whether to look for image or text
 set pList to common.imageOrText(imageOrText)
 
-# add searchRectangle, waitFor, and DPI properties to the property list
-if searchRec begins with "sr(" then set pList.searchRectangle to sr(item 1 of split(item 2 of split(searchRec,"sr("),")")) else if searchRec > "" then set pList.searchRectangle to sr(searchRec)
+# add searchRectangle, DPI, and waitFor properties to the property list
+if searchRec begins with "sr("\
+		then set pList.searchRectangle to sr(item 1 of split(item 2 of split(searchRec,"sr("),")"))\
+		else if searchRec > ""\
+			then set pList.searchRectangle to sr(searchRec)
+if pList.text > "" and if dpi begins with "dpi"\
+		then set pList.dpi to (the match of <max digits> in dpi).text\
+		else set pList.dpi to dpi //backwards compatible when dpi param was just a number
 set pList.waitFor to 0.99
-if dpiValue > "" and pList.text > ""
-	if dpiValue begins with "dpi"
-		delete <letters> from it
-		delete <whitespace> from it
-	end if
-	set pList.dpi to dpiValue
-end if
 put "         "&pList
 
 # looking for imageOrText to be found (or be removed from) the screen for the specified duration of time
 repeat for duration seconds
-	if notFound contains "not" and if not imageFound(pList) then set visible to false else if notFound is "found" and if imageFound(pList) then set visible to true
+	if notFound contains "not" and if not imageFound(pList)\
+			then set visible to false\
+			else if notFound is "found" and if imageFound(pList)\
+				then set visible to true
 	if visible > "" then exit repeat
 end repeat
 sr
@@ -84,6 +86,8 @@ if...
 end if
 
 # handles wait time after found/notFound if specified
+if waitAfter begins with "wait"\
+		then set waitAfter to (the match of <max digits> in waitAfter).text //backwards compatible when waitAfer param was just a number
 if waitAfter > 0
 	put !<<         [[notSign]] Waiting after for [[waitAfter]] seconds...>>
 	wait waitAfter
