@@ -1,0 +1,102 @@
+# Clicks a specified location in a specified direction and types string (or performs specified click action) and optionally returns copied string
+#
+#
+#  Parameter:
+#
+#		(1) inputFieldLabelOrXY: input field label or XY coordinate (can specify with "text" at the beginning if image with same name exists)
+#		(2) typeString:
+#				(a) string to be typed into the input field
+#				(b) can also be a click action: 'click', 'doubleclick', 'tripleclick')
+#		(3)	direction: specify direction of input field from label (e.g., right, down, xy)
+#		(4 to 7) param4 to param7 are optional in no specific order:
+#			- index (should be just a number from -10 to 10): specify only if there are multiple instances of the same word on the screen
+#			- dpi (must begin with "dpi" followed by number): specify if OCR tuning is required
+#			- offset (must begin with "offset" followed by number): specify number of pixels to offset by to click inside the input field
+#			- waitForTime (must begin with "wait" followed by number): specify number of seconds to wait (default is 7)
+#
+#
+#  Usage Syntax:
+#
+#		clicktype "Username","GuestQA",right
+#		clicktype "Username","GuestQA",down,dpi144,offset20
+#		set confirmationNumber to clicktype("Confirmation Number",tripleclick,down,dpi85,-1)
+#
+#
+# SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
+# SUITE  NAME:  jtils
+# SCRIPT NAME:  clicktype.script
+# AUTHOR NAME:  Jerry Park
+#
+
+
+params inputFieldLabelOrXY, typeString, direction, param4, param5, param6, param7
+put ">> clicktype.script"
+
+# set the things
+repeat for each item of [param4, param5, param6, param7]
+	if it is empty then exit repeat
+	if it begins with...
+		"wai": set waitForTime to (the match of <max digits> in it).text
+		"ind": set index to (the match of <max digits> in it).text
+		"dpi": set dpi to (the match of <max digits> in it).text
+		"off": set offset to (the match of <max digits> in it).text
+		else:
+			if it is in -10..10 then set index to it //when param does not begin with "index" due to negative number such as last instance or -1
+	end if
+end repeat
+
+# ensure default values before proceeding regardless of current assignment
+repeat for each item of [dpi,index,offset,waitForTime]
+	if it is not a number...
+		...and it begins with "dpi": set dpi to 72
+		...and it begins with "ind": set index to 1
+		...and it begins with "off": set offset to 15
+		...and it begins with "wai": set waitForTime to 7
+	end if
+end repeat
+
+# determine offset based on whether the input field is right of or below the label
+if direction contains "d" then set (position,offset) to (bottomCenter,[0,offset])\
+		else if direction contains "r" then set (position,offset) to (rightCenter,[offset+5,0])\
+			else if direction does not contain <"r" or "d"> then set (position,offset) to (rightCenter,[offset+5,0])  //backwards compatibility for when right was default direction
+
+# formulate based on coordinate or text
+if inputFieldLabelOrXY is not a list
+	if inputFieldLabelOrXY begins with "text" then set inputFieldLabelOrXY to trimStart(item -1 of split(inputFieldLabelOrXY,chars 1..4 of inputFieldLabelOrXY))
+	set pList to {text:inputFieldLabelOrXY,dpi:dpi,waitFor:waitForTime}
+
+	# determine click location from text with offset considering if index was specified
+	if index is 1\
+			then set inputField to imageRectangle(pList).(position)+offset\
+			else set inputField to (item index of everyImageRectangle(pList)).(position)+offset
+
+else if direction is "XY"
+	# coordinate without offset
+	set inputField to inputFieldLabelOrXY
+
+else
+	# coordinate with offset
+	set inputField to inputFieldLabelOrXY+offset
+end if
+
+# adding context to the execution log for debugging
+put !"[[newline]]>>   pList: [[pList]][[newline]]>>   typeString: [[typeString]][[newline]]"
+
+# perform the specified type or click action
+if typeString is...
+	"click": click inputField
+	"doubleclick": doubleclick inputField
+	"tripleclick": tripleclick inputField
+	else:
+		click inputField
+		wait 0.99
+		typeText typeString
+		exit handler
+end if
+
+# if double or tripleclick is specified, returns the selected value
+if typeString is contained by ["doubleclick","tripleclick"]
+	key.copy
+	return remoteClipboard()
+end if
+
