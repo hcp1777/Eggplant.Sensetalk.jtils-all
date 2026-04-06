@@ -202,17 +202,17 @@ Expected Parameters:
 1. duration: number (default: 9.99 seconds)
 2. imageOrText: image filepath/filename or text string
 3. notFound: "found" or "not found"  (default: found)
-4. waitAfter: number (default: 0 (no waiting after))
+4. waitAfter: should begin with 'wait' followed by number (default: 0 (no waiting after))
 5. searchRec: compatible with sr.script (default: not specified)
-6. dpiValue: number (default: 85)
+6. dpi: should begin with 'dpi' followed by number (default: 85)
 ```
 
 Usage Syntax:
 ```declarative
 waitUntil 10,"browser/refresh",found
-waitUntil 30,"Save Print Output As",notFound,10
-waitUntil 60,"Loading",notFound,1,sr(c),144
-waitUntil 120,"Finished processing",found,0,[100,100,1000,1000],72
+waitUntil 30,"Save Print Output As",notFound,wait10
+waitUntil 60,"Loading",notFound,wait1,sr(c),dpi144
+waitUntil 120,"Finished processing",found,wait0,[100,100,1000,1000],dpi72
 ```
 
 - - -
