@@ -8,16 +8,24 @@
 #
 
 
-to imageOrText source
+to imageOrText sourceAndProperties
 	# determines whether the passed in parameter is an image or text string and returns the properly constructed property list
-
-	if source begins with "text"
-		return {text:trimStart(item -1 of split(source,chars 1..4 of source))} //if string is explicitly specified as text for when image with same name not on screen might exist
+	
+	# set the thing
+	set source to item 1 of sourceAndProperties
+	
+	# handling backwards compatibility - explicitly specifying text as source for when image with same name existing might be a concern
+	if source begins with "text" considering case then return {text:trimStart(item -1 of split(source,chars 1..4 of source))}
+	
+	# if text was not explicitly specified for source, determine if text or image
+	set ocrParameters to items 2..-1 of sourceAndProperties
+	if ocrParameters.asText contains pattern "(case|new|aggress|dpi|char|word|invert|space|under|multi)"
+		return {text:source}
 	else
 		try
 			if imageInfo(source) > "" then return {image:source} //checking for image
 		catch
-			return {text:source} //if no image with specified name, constructing the property list for text
+			return {text:source} //if no image, falling back to text
 		end try
 	end if
 end to imageOrText
