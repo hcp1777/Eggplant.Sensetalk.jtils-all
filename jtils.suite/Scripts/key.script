@@ -166,6 +166,10 @@ to options
 	typeText shiftKey,f10
 end options
 
+to windowsSettings
+	typeText windowsKey,i
+end windowsSettings
+
 
 -----------------------------------------------------------------
 # browser specific
@@ -360,6 +364,5 @@ end f11
 to f12
 	typeText f12
 end f12
-
 
 
