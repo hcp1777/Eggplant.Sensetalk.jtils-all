@@ -19,9 +19,9 @@
 #  Usage Syntax:
 #
 #		waitUntil 10,"browser/refresh",found
-#		waitUntil 30,"Save Print Output As",found,wait10
-#		waitUntil 30,"Save Print Output As",notFound,wait10,screenBR
-#		waitUntil 30,"Save Print Output As",notFound,wait10,sr(radius,tll,100),dpi85
+#		waitUntil 30,"Save Print Output As",found,waitAfter10
+#		waitUntil 30,"Save Print Output As",notFound,waitAfter0,screenBR
+#		waitUntil 30,"Save Print Output As",notFound,waitAfter1,sr(radius,tll,100),dpi85
 #
 #
 # SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
@@ -33,7 +33,8 @@
 
 params duration=9.99, imageOrText, notFound="found", waitAfter=wait0, searchRec="", dpi=dpi72
 
-put !<<    ./waitUntil.script[[newline]]      [[notSign]] Waiting [[duration]] seconds for "[[imageOrText]]"...>>
+if notFound contains "not" then set expected to "not found" else set expected to "found"
+log !"./waitUntil.script [[notSign]] waiting [[duration]] seconds for '[[imageOrText]]' to be [[expected ]]..."
 set visible to empty
 set timeExpired to false
 logger 0
@@ -48,9 +49,9 @@ if searchRec begins with "sr("\
 			then set pList.searchRectangle to sr(searchRec)
 if pList.text > "" and if dpi begins with "dpi"\
 		then set pList.dpi to (the match of <max digits> in dpi).text\
-		else set pList.dpi to dpi //backwards compatible when dpi param was just a number
+		else set pList.dpi to dpi //backwards compatible when dpi param was not specified as "dpi" before the value
 set pList.waitFor to 0.99
-put "         "&pList
+--log pList
 
 # looking for imageOrText to be found (or be removed from) the screen for the specified duration of time
 repeat for duration seconds
@@ -75,23 +76,23 @@ if...
 		note logWarning,"waitUntil",!<<"[[imageOrText]]" was not found within [[duration]] seconds>>,"script"
 	notFound is "found" and visible:
 		logger
-		put !<<      [[notSign]] Found "[[imageOrText]]" at [[foundImageLocation()]]!>>
+		note log,"waitUntil",!<<Found "[[imageOrText]]" at [[foundImageLocation()]]!>>,"script"
 	notFound contains "not" and visible is not false:
 		logger
 		screenshot !"waitUntil - still visible after specified duration" //debug
 		note logWarning,"waitUntil",!<<"[[imageOrText]]" is still visible after specified duration>>,"script"
 	notFound contains "not":
 		logger
-		put !<<      [[notSign]] "[[imageOrText]]" is no longer visible on the screen!>>
+		note log,"waitUntil",!<<"[[imageOrText]]" is no longer visible on the screen!>>,"script"
 end if
 
 # handles wait time after found/notFound if specified
 if waitAfter begins with "wait"\
-		then set waitAfter to (the match of <max digits> in waitAfter).text //backwards compatible when waitAfer param was just a number
+		then set waitAfter to (the match of <max digits> in waitAfter).text //backwards compatible when waitAfer param was not specified as "wait" before the value
 if waitAfter > 0
-	put !<<         [[notSign]] Waiting after for [[waitAfter]] seconds...>>
+	log !<<          [[notSign]] Waiting after for [[waitAfter]] seconds...>>
 	wait waitAfter
-	put !<<         [[notSign]] Done!>>
+	log !<<          [[notSign]] Done!>>
 end if
 
 
