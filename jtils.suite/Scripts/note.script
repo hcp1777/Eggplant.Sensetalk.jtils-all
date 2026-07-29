@@ -13,7 +13,8 @@
 #	Usage Syntax:
 #
 #		note log,handlerPathAndName,"Logger message"
-#		note logSuccess,scriptPathAndName,"Logger message",y
+#		note logSuccess,scriptPathAndName,"Logger message",script
+#		note logError,handlerPathAndName,"Logger message",handler,"exit all"
 #
 #
 # SUITE DESCR:  Jerry's Utilities (Sensetalk Toolkit, Established Since 2020)
@@ -38,5 +39,6 @@ if logType is contained by...
 end if
 
 if terminateAction is "exit all" then exit all
+
 
 
