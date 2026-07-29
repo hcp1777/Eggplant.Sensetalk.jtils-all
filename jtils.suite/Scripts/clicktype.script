@@ -4,15 +4,25 @@
 #  Parameter:
 #
 #		(1) inputFieldLabelOrXY: input field label or XY coordinate (can specify with "text" at the beginning if image with same name exists)
+#
 #		(2) typeString:
 #				(a) string to be typed into the input field
 #				(b) can also be a click action: 'click', 'doubleclick', 'tripleclick')
+#
 #		(3)	direction: specify direction of input field from label (e.g., right, down, xy)
-#		(4 to 7) param4 to param7 are optional in no specific order:
+#
+#		(4 to 10) param4 to param10 are optional in no specific order:
+#
+#			- offset (must begin with "offset" followed by number, offset75): specify number of pixels to offset by to click inside the input field
 #			- index (should be just a number from -10 to 10): specify only if there are multiple instances of the same word on the screen
-#			- dpi (must begin with "dpi" followed by number): specify if OCR tuning is required
-#			- offset (must begin with "offset" followed by number): specify number of pixels to offset by to click inside the input field
-#			- waitForTime (must begin with "wait" followed by number): specify number of seconds to wait (default is 7)
+#
+#			- search rectangle (must begins with "screen" or "sr(", screenBL or sr(radiusc,100)): sets searchRectangle
+#			- valid characters (must contain "char"): sets validCharacters to "*"
+#			- ignore newline (must contain "line"): sets ignoreNewline to true
+#			- text difference (must contain "diff" followed by number, textDiff3 or diff2): sets textDifference to specified number
+#			- invert image (must have "invert", invert): sets invertImage to true
+#			- dpi (must begin with "dpi" followed by number, dpi144): specify if OCR tuning is required
+#			- waitFor (must begin with "wait" followed by number, wait10): specify number of seconds to waitFor (default is 7)
 #
 #
 #  Usage Syntax:
@@ -29,29 +39,26 @@
 #
 
 
-params inputFieldLabelOrXY, typeString, direction, param4, param5, param6, param7
-put ">> clicktype.script"
+params inputFieldLabelOrXY, typeString, direction, param4, param5, param6, param7, param8, param9, param10
+log "./clicktype.script"
 
 # set the things
+set (index,offset) to (1,15)
 repeat for each item of [param4, param5, param6, param7]
 	if it is empty then exit repeat
-	if it begins with...
-		"wai": set waitForTime to (the match of <max digits> in it).text
-		"ind": set index to (the match of <max digits> in it).text
-		"dpi": set dpi to (the match of <max digits> in it).text
-		"off": set offset to (the match of <max digits> in it).text
+	if it...
+		...begins with "wai": set pList.waitFor to (the match of <max digits> in it).text
+		...begins with "dpi": set pList.dpi to (the match of <max digits> in it).text
+		...contains "inv": set pList.invertImage to true
+		...contains "char": set pList.validCharacters to "*"
+		...contains "line": set pList.ignoreNewline to true
+		...contains "diff": set pList.textDifference to (the match of <max digits> in it).text
+		...begins with "ind": set index to (the match of <max digits> in it).text
+		...begins with "off": set offset to (the match of <max digits> in it).text
+		...begins with "screen": set pList.searchRectangle to sr(it)
+		...begins with "sr(": set pList.searchRectangle to sr(item 1 of split(item 2 of split(it,"sr("),")"))
 		else:
 			if it is in -10..10 then set index to it //when param does not begin with "index" due to negative number such as last instance or -1
-	end if
-end repeat
-
-# ensure default values before proceeding regardless of current assignment
-repeat for each item of [dpi,index,offset,waitForTime]
-	if it is not a number...
-		...and it begins with "dpi": set dpi to 72
-		...and it begins with "ind": set index to 1
-		...and it begins with "off": set offset to 15
-		...and it begins with "wai": set waitForTime to 7
 	end if
 end repeat
 
@@ -61,26 +68,20 @@ if direction contains "d" then set (position,offset) to (bottomCenter,[0,offset]
 			else if direction does not contain <"r" or "d"> then set (position,offset) to (rightCenter,[offset+5,0])  //backwards compatibility for when right was default direction
 
 # formulate based on coordinate or text
-if inputFieldLabelOrXY is not a list
-	if inputFieldLabelOrXY begins with "text" then set inputFieldLabelOrXY to trimStart(item -1 of split(inputFieldLabelOrXY,chars 1..4 of inputFieldLabelOrXY))
-	set pList to {text:inputFieldLabelOrXY,dpi:dpi,waitFor:waitForTime}
+if inputFieldLabelOrXY is a list then set (inputField,pList) to (inputFieldLabelOrXY+offset,"[x,y]") else set pList.text to inputFieldLabelOrXY
 
-	# determine click location from text with offset considering if index was specified
+# adding context to the execution log for debugging
+log !"  [[notSign]] clicked [[direction]] from [[pList]]"
+if typeString is not contained by ["tripleclick","doubleclick","click"]\
+		then log !"  [[notSign]] typing '[[typeString]]'"\
+		else log !"  [[notSign]] [[typeString]]ing in the input field"
+
+# determine click location from text with offset considering if index was specified if not a direct [x,y] location
+if pList is a property list
 	if index is 1\
 			then set inputField to imageRectangle(pList).(position)+offset\
 			else set inputField to (item index of everyImageRectangle(pList)).(position)+offset
-
-else if direction is "XY"
-	# coordinate without offset
-	set inputField to inputFieldLabelOrXY
-
-else
-	# coordinate with offset
-	set inputField to inputFieldLabelOrXY+offset
 end if
-
-# adding context to the execution log for debugging
-put !"[[newline]]>>   pList: [[pList]][[newline]]>>   typeString: [[typeString]][[newline]]"
 
 # perform the specified type or click action
 if typeString is...
@@ -99,4 +100,6 @@ if typeString is contained by ["doubleclick","tripleclick"]
 	key.copy
 	return remoteClipboard()
 end if
+
+
 
