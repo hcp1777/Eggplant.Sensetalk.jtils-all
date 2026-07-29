@@ -47,7 +47,7 @@ if x1 is...
 	radius:
 		if y1 is a list //when coordinate or rectangle is passed in rather than letter(s) specifying direction (when not using mouseLocation())
 			if y1 is a rectangle then set refXY to y1.center else set refXY to y1
-			set rad to x2
+			set (y1,rad,x2) to (x2,y2,y2) //if coordinate is supplied as y1 then subsequent parameters need to be shifted and reassigned
 		else //when radius is using existing mouseLocation()
 			set refXY to mouseLocation()
 			if y1 is a number then set rad to y1 //if 'c' for center is not explicitly specified but assumed with pixel value from cursor
@@ -130,7 +130,6 @@ if x1 is...
 		if y2 is within 0..1 then set y2 to y2*s.y
 		return [x1,y1,x2,y2]
 end if
-
 
 
 
