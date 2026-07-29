@@ -20,10 +20,10 @@
 set typeStrings to parameterList()
 
 set i to item 1 of typeStrings
-set rwi to the remoteWorkInterval
+set currRWI to the remoteWorkInterval
 
 # if the first parameter is a number, set remoteWorkInterval() to the value
-if i is a number and i is in 0..3
+if i is a number and i < 1	
 	rwi i
 	pull typeStrings
 else
@@ -42,7 +42,7 @@ repeat for each item of typeStrings
 end repeat
 
 # setting remoteWorkInterval() back to value before script execution
-rwi
+rwi currRWI
 
 
 
