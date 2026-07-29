@@ -72,7 +72,7 @@ set sourceAndProperties to parameterList()
 logger 0
 
 # determining whether to look for image or text from 'source'
-set pList to common.imageOrText(item 1 of sourceAndProperties)
+set pList to common.imageOrText(sourceAndProperties)
 pull sourceAndProperties
 
 # add text property to the property list
@@ -129,9 +129,8 @@ repeat for each item of sourceAndProperties
 	end if
 end repeat
 logger
-put !" >> pL [[notSign]] [[pList]]"
+log !"pL [[notSign]] [[pList]]"
 return pList
-
 
 
 
